@@ -1,11 +1,11 @@
-# Package receipt — create 0.1.0
+# Package receipt — create 0.1.1
 
 | field | value |
 |---|---|
-| version | `0.1.0` |
+| version | `0.1.1` |
 | file | `create.hmod` |
-| bytes | 23,894 |
-| sha256 | `2272818e7b35038e787786b2c72bcbea399ec8761b9ff928be9c7c3277dc2cf7` |
+| bytes | 34,810 |
+| sha256 | `bec224ec6802c113b0082bbbce78627f523770005333455ebb523f09c2a41b90` |
 | source | this tag — the tree here is the source that produced the archive |
 | game | 26.3 |
 | horizon | `0a875da91dbb0fdcb7ba8c42c11341aa229af51a` |

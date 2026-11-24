@@ -67,6 +67,24 @@ ITEM_COLOUR = {
     "copper_sheet": "copper",
 }
 
+# Slice 2 (0.1.1): the blocks the pure solver recognises. Every byte below is
+# generated from the palette, never read from the cached ARR jar.
+KINETIC_BLOCKS = [
+    "shaft",
+    "cogwheel",
+    "large_cogwheel",
+    "encased_shaft",
+    "mechanical_press",
+]
+KINETIC_NAMES = {
+    "shaft": "Shaft",
+    "cogwheel": "Cogwheel",
+    "large_cogwheel": "Large Cogwheel",
+    "encased_shaft": "Encased Shaft",
+    "mechanical_press": "Mechanical Press",
+}
+FACINGS = ["down", "up", "north", "south", "west", "east"]
+
 
 def rgba(name: str) -> tuple[int, int, int, int]:
     r, g, b = PALETTE[name]
@@ -141,6 +159,95 @@ def item_texture(kind: str) -> bytes:
                 inside = 4 <= x < 12 and 4 <= y < 12
             pixels.append(rgba(name) if inside else TRANSPARENT)
     return png(16, 16, pixels)
+
+
+def kinetic_texture(kind: str) -> bytes:
+    """A 16x16 generated silhouette for a kinetic block, built only from the palette."""
+    pixels = []
+    for y in range(16):
+        for x in range(16):
+            colour = TRANSPARENT
+            if kind == "shaft":
+                if 6 <= x < 10 and 2 <= y < 14:
+                    colour = rgba("dark") if x in (6, 9) else rgba("brass")
+            elif kind == "cogwheel":
+                if 3 <= x < 13 and 3 <= y < 13:
+                    colour = rgba("brass") if (x + y) % 3 else rgba("dark")
+            elif kind == "large_cogwheel":
+                if 1 <= x < 15 and 1 <= y < 15:
+                    colour = rgba("brass") if (x // 4 + y // 4) % 2 == 0 else rgba("dark")
+            elif kind == "encased_shaft":
+                if 2 <= x < 14 and 2 <= y < 14:
+                    colour = rgba("dark") if x in (2, 13) or y in (2, 13) else rgba("brass")
+            else:  # mechanical_press
+                if 3 <= x < 13 and 2 <= y < 14:
+                    colour = rgba("iron") if y < 6 else rgba("brass")
+            pixels.append(colour)
+    return png(16, 16, pixels)
+
+
+def kinetic_blockstate(kind: str) -> str:
+    model = f"create:block/{kind}/block"
+    if kind == "mechanical_press":
+        return json.dumps({"variants": {"": {"model": model}}}, indent=2) + "\n"
+    return json.dumps(
+        {
+            "variants": {
+                "axis=x": {"model": model, "x": 90, "y": 90},
+                "axis=y": {"model": model},
+                "axis=z": {"model": model, "x": 90},
+            }
+        },
+        indent=2,
+    ) + "\n"
+
+
+def kinetic_block_model(kind: str) -> str:
+    return json.dumps(
+        {
+            "parent": "block/block",
+            "textures": {
+                "particle": f"create:block/{kind}",
+                "texture": f"create:block/{kind}",
+            },
+            "elements": [
+                {
+                    "from": [2, 2, 2],
+                    "to": [14, 14, 14],
+                    "faces": {
+                        face: {"texture": "#texture", "cullface": face}
+                        for face in ("down", "up", "north", "south", "west", "east")
+                    },
+                }
+            ],
+        },
+        indent=2,
+    ) + "\n"
+
+
+def kinetic_block_decl(kind: str) -> str:
+    if kind == "mechanical_press":
+        state_properties = {"facing": {"type": "enum", "values": FACINGS}}
+        default_state = {"facing": "south"}
+    else:
+        state_properties = {"axis": {"type": "enum", "values": ["x", "y", "z"]}}
+        default_state = {"axis": "x"}
+    return json.dumps(
+        {
+            "template": "minecraft:stone",
+            "properties": {
+                "explosion_resistance": 3.0,
+                "hardness": 3.0,
+                "occludes": False,
+                "render_shape": "MODEL",
+                "requires_tool": False,
+                "sounds": "minecraft:stone",
+            },
+            "state_properties": state_properties,
+            "default_state": default_state,
+        },
+        indent=2,
+    ) + "\n"
 
 
 def monogram_icon() -> bytes:
@@ -247,7 +354,13 @@ def render() -> dict[str, bytes | str]:
     }
     lang = {f"block.create.{k}": v for k, v in names.items()}
     lang.update({f"item.create.{k}": v for k, v in names.items()})
+    lang.update({f"block.create.{k}": v for k, v in KINETIC_NAMES.items()})
     lang["itemGroup.create.create"] = "Create"
+    for kind in KINETIC_BLOCKS:
+        out[f"assets/create/textures/block/{kind}.png"] = kinetic_texture(kind)
+        out[f"assets/create/blockstates/{kind}.json"] = kinetic_blockstate(kind)
+        out[f"assets/create/models/block/{kind}/block.json"] = kinetic_block_model(kind)
+        out[f"data/create/horizon/block/{kind}.json"] = kinetic_block_decl(kind)
     out["assets/create/lang/en_us.json"] = json.dumps(lang, indent=2, sort_keys=True) + "\n"
 
     out["data/create/horizon/block/creative_motor.json"] = json.dumps(

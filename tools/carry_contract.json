@@ -1,8 +1,15 @@
 {
   "schema": 1,
   "source_jar": "create-1.21.1-6.0.10.jar",
-  "slice": "0.1.0 interop surface",
-  "blocks": ["create:creative_motor"],
+  "slice": "0.1.1 kinetics engine",
+  "blocks": [
+    "create:creative_motor",
+    "create:shaft",
+    "create:cogwheel",
+    "create:large_cogwheel",
+    "create:encased_shaft",
+    "create:mechanical_press"
+  ],
   "items": [
     "create:creative_motor",
     "create:andesite_alloy",
@@ -16,14 +23,14 @@
   "loot_tables": ["create:creative_motor"],
   "tags": ["c:nuggets/iron"],
   "counts": {
-    "block_declarations": 1,
+    "block_declarations": 6,
     "loot_tables": 1,
     "recipes": 1,
     "item_tags": 1,
-    "blockstates": 1,
-    "block_models": 3,
+    "blockstates": 6,
+    "block_models": 8,
     "item_models": 7,
-    "generated_textures": 8,
+    "generated_textures": 13,
     "lang_files": 1
   }
 }

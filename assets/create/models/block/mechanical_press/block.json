@@ -1,0 +1,47 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "create:block/mechanical_press",
+    "texture": "create:block/mechanical_press"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        2,
+        2
+      ],
+      "to": [
+        14,
+        14,
+        14
+      ],
+      "faces": {
+        "down": {
+          "texture": "#texture",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#texture",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#texture",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#texture",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#texture",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#texture",
+          "cullface": "east"
+        }
+      }
+    }
+  ]
+}

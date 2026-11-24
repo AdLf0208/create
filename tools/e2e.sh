@@ -8,10 +8,13 @@
 #  B  the same command on a vanilla stone refuses the id (unknown-id control in-game);
 #  C  a carried item (`create:andesite_alloy`) is give-able and read back in the inventory;
 #  D  the carried andesite_alloy recipe crafts in the 2x2 grid from andesite + iron nuggets.
+#  E  the kinetics engine: motor (300,101,0) → shaft[axis=x] (301,101,0) → press (302,101,0)
+#     publishes speed=16 stress=8 at the shaft; an unconnected shaft at (305,101,0) is idle,
+#     and a press at (304,101,0) outside the component must not add stress (differential).
 #
 # The control run uses the unmodded Nightly game (`GAME=$CONTROL_GAME`): the command does
-# not exist, phase A's line never arrives, and the leg fails (EXIT:1). `SELFTEST=1` asks
-# for a speed the model cannot publish (999), so phase A fails there too (EXIT:1).
+# not exist, phase A's line never arrives, and the leg fails (EXIT:1). `SELFTEST=1` changes
+# only phase E's expected stress from 8 to 9, so the inverted assertion fails there (EXIT:1).
 #
 # Every mod command goes through `ctl chat` and every reply is read from `ctl events
 # --since` (a sequence marker), never from the tail of the log.
@@ -32,10 +35,11 @@ WORLD=CreateE2E${LEG:-green}-$$
 X0=300
 Y=101
 
-# Phase A's expected readout. The selftest asks for a speed the standalone source cannot
-# publish; the control game never registers the command (so the line never arrives).
+# Phase A's expected readout (unchanged from 0.1.0); the control game never registers the
+# command, so the line never arrives. The selftest inverts only phase E's stress value.
 EXPECT="CREATE_SOURCE x=$X0 y=$Y z=0 speed=16 capacity=16384 stress=0 status=Running"
-if [ "$SELFTEST" = 1 ]; then EXPECT="CREATE_SOURCE x=$X0 y=$Y z=0 speed=999 capacity=16384 stress=0 status=Running"; fi
+EXPECT_NET="CREATE_NETWORK x=$((X0 + 1)) y=$Y z=0 speed=16 stress=8 capacity=16384 status=Running"
+if [ "$SELFTEST" = 1 ]; then EXPECT_NET="CREATE_NETWORK x=$((X0 + 1)) y=$Y z=0 speed=16 stress=9 capacity=16384 status=Running"; fi
 
 [ -x "$CTL" ] || { echo "missing horizon-ctl: $CTL" >&2; exit 1; }
 [ -x "$GAME" ] || { echo "missing game: $GAME" >&2; exit 1; }
@@ -168,4 +172,47 @@ if [ "$SELFTEST" != 1 ]; then
     echo "  D: crafted create:andesite_alloy; 2 andesite + 2 iron nuggets consumed" >&2
 fi
 
-echo "PASS: Create interop surface proven in game (LEG=${LEG:-green} SELFTEST=$SELFTEST)"
+# Phase E — the kinetics engine: generator → shaft → press, read through the player command path.
+ctl command "execute in minecraft:the_end run setblock $X0 $Y 0 create:creative_motor[facing=east]" >/dev/null
+ctl command "execute in minecraft:the_end run setblock $((X0 + 1)) $Y 0 create:shaft[axis=x]" >/dev/null
+ctl command "execute in minecraft:the_end run setblock $((X0 + 2)) $Y 0 create:mechanical_press[facing=west]" >/dev/null
+ctl command "execute in minecraft:the_end run setblock $((X0 + 5)) $Y 0 create:shaft[axis=x]" >/dev/null
+ctl wait 20 >/dev/null
+for posx in "$X0" "$((X0 + 1))" "$((X0 + 2))" "$((X0 + 5))"; do
+    echo "E placed [$posx,$Y,0]: $(ctl block "$posx" "$Y" 0 | jq -c '.block // empty')"
+done
+REPLY=$(ask "CREATE_NETWORK" "create network $((X0 + 1)) $Y 0")
+echo "E network reply: $REPLY"
+case "$REPLY" in
+    *"$EXPECT_NET"*) echo "  E: solved network matches '$EXPECT_NET'" >&2 ;;
+    *) fail "E network: expected '$EXPECT_NET', got '$REPLY'" ;;
+esac
+# The neighbour's saved fields after the solve — the world/data feed an add-on reads.
+PUBLISHED="CREATE_NETWORK published x=$((X0 + 1)) y=$Y z=0 speed=16 stress=8 capacity=16384 status=Running"
+case "$REPLY" in
+    *"$PUBLISHED"*) echo "  E: neighbour block entity publishes the solved fields" >&2 ;;
+    *) fail "E published fields: expected '$PUBLISHED', got '$REPLY'" ;;
+esac
+
+# An unconnected shaft is idle, not silently reported as part of the motor's network.
+REPLY=$(ask "CREATE_NETWORK" "create network $((X0 + 5)) $Y 0")
+echo "E control reply: $REPLY"
+case "$REPLY" in
+    *"CREATE_NETWORK x=$((X0 + 5)) y=$Y z=0 speed=0 stress=0 capacity=0 status=Idle"*)
+        echo "  E: unconnected shaft is Idle" >&2 ;;
+    *) fail "E control: expected an idle unconnected shaft, got '$REPLY'" ;;
+esac
+
+# Differential: a press outside the component must not add stress. The shaft at X0+1 is two
+# blocks away from it, so the solved component (and its stress) is unchanged.
+ctl command "execute in minecraft:the_end run setblock $((X0 + 4)) $Y 0 create:mechanical_press[facing=west]" >/dev/null
+ctl wait 8 >/dev/null
+REPLY=$(ask "CREATE_NETWORK" "create network $((X0 + 1)) $Y 0")
+echo "E differential reply: $REPLY"
+case "$REPLY" in
+    *"CREATE_NETWORK x=$((X0 + 1)) y=$Y z=0 speed=16 stress=8 capacity=16384 status=Running"*)
+        echo "  E: out-of-component press adds no stress" >&2 ;;
+    *) fail "E differential: an unconnected press changed the network, got '$REPLY'" ;;
+esac
+
+echo "PASS: Create interop surface and kinetics engine proven in game (LEG=${LEG:-green} SELFTEST=$SELFTEST)"

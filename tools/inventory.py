@@ -42,7 +42,10 @@ def check() -> int:
         "recipes": names(PORT / "data/create/recipe"),
         "item_tags": names(PORT / "data/c/tags/item"),
         "blockstates": names(PORT / "assets/create/blockstates"),
-        "block_models": names(PORT / "assets/create/models/block"),
+        "block_models": {
+            str(p.relative_to(PORT / "assets/create/models/block"))
+            for p in (PORT / "assets/create/models/block").rglob("*.json")
+        },
         "item_models": names(PORT / "assets/create/models/item"),
         "generated_textures": {
             str(p.relative_to(PORT / "assets/create/textures")) for p in (PORT / "assets/create/textures").rglob("*.png")
