@@ -1,0 +1,15 @@
+[package]
+# Port of Create 6.0.10 (Creators-of-Create/Create, MIT code / ARR assets).
+# Clean-room Rust rewrite from the cached artefact's behaviour; local-only until
+# publishing is approved. The mod's identity is horizon-mod.toml, not this name.
+name = "create"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Create for Horizon: the interop surface (kinetic readout) for add-ons"
+publish = false
+
+[dependencies]
+# The pinned SDK's API crate, fetched into .horizon/sdk/ by any `cargo horizon-mod` command.
+# R9: this is the only dependency; no [workspace], no build script, no packed Cargo.lock.
+horizon-mod-api = { path = ".horizon/sdk/api/crates/horizon-mod-api" }

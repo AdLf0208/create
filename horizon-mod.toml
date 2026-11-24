@@ -1,0 +1,17 @@
+id = "create"
+name = "Create"
+version = "0.1.0"
+description = """Create for Horizon — first publication: the interop surface dependent add-ons bind to.
+One self-contained Creative Motor block publishes Speed, Capacity, Stress and NetworkStatus through its
+block entity's saved NBT, the same shape an add-on reads from a neighbouring Create block. The pure model
+lives in src/runtime.rs; connected propagation and stress accounting are the next slice. All art is
+regenerated with zero jar-derived bytes; MIT code and upstream credit (The Create Team) travel with it."""
+authors = ["The Create Team (Creators of Create)", "AdLf0208"]
+api = "0.2"
+side = "both"
+capabilities = ["registries"]
+
+[native]
+game = "26.3"
+horizon = "0a875da91dbb0fdcb7ba8c42c11341aa229af51a"
+mixins = "e59da9094f0c2fdda6c627fe9eff22dec6a906f0"

@@ -1,0 +1,17 @@
+{
+  "block.create.andesite_alloy": "Andesite Alloy",
+  "block.create.brass_ingot": "Brass Ingot",
+  "block.create.brass_nugget": "Brass Nugget",
+  "block.create.brass_sheet": "Brass Sheet",
+  "block.create.copper_sheet": "Copper Sheet",
+  "block.create.creative_motor": "Creative Motor",
+  "block.create.iron_sheet": "Iron Sheet",
+  "item.create.andesite_alloy": "Andesite Alloy",
+  "item.create.brass_ingot": "Brass Ingot",
+  "item.create.brass_nugget": "Brass Nugget",
+  "item.create.brass_sheet": "Brass Sheet",
+  "item.create.copper_sheet": "Copper Sheet",
+  "item.create.creative_motor": "Creative Motor",
+  "item.create.iron_sheet": "Iron Sheet",
+  "itemGroup.create.create": "Create"
+}

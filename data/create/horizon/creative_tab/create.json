@@ -1,0 +1,13 @@
+{
+  "title": "itemGroup.create.create",
+  "icon": "create:creative_motor",
+  "items": [
+    "create:creative_motor",
+    "create:andesite_alloy",
+    "create:brass_ingot",
+    "create:brass_nugget",
+    "create:iron_sheet",
+    "create:brass_sheet",
+    "create:copper_sheet"
+  ]
+}

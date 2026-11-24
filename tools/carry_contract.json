@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "source_jar": "create-1.21.1-6.0.10.jar",
+  "slice": "0.1.0 interop surface",
+  "blocks": ["create:creative_motor"],
+  "items": [
+    "create:creative_motor",
+    "create:andesite_alloy",
+    "create:brass_ingot",
+    "create:brass_nugget",
+    "create:iron_sheet",
+    "create:brass_sheet",
+    "create:copper_sheet"
+  ],
+  "recipes": ["create:andesite_alloy"],
+  "loot_tables": ["create:creative_motor"],
+  "tags": ["c:nuggets/iron"],
+  "counts": {
+    "block_declarations": 1,
+    "loot_tables": 1,
+    "recipes": 1,
+    "item_tags": 1,
+    "blockstates": 1,
+    "block_models": 3,
+    "item_models": 7,
+    "generated_textures": 8,
+    "lang_files": 1
+  }
+}
